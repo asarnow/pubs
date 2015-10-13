@@ -11,7 +11,7 @@ def main(args):
 
     # evidence = deduplicate(evidence_raw, "Protein Group IDs")
     # evidence = deduplicate(evidence, "Phospho (STY) Site IDs")
-    phosphosites = deduplicate(phosphosites_raw, "Protein Group IDs")
+    phosphosites = denormalize(phosphosites_raw, "Protein Group IDs")
     evi_norm = pandas.merge(phosphosites,
                             proteins_raw,
                             left_on="Protein Group IDs",
@@ -20,7 +20,7 @@ def main(args):
     evi_norm.to_csv('phospho_norm.txt', sep="\t")
 
 
-def deduplicate(dfin, col):
+def denormalize(dfin, col):
     df = dfin
     drp = []
     new_entries = []
@@ -30,9 +30,13 @@ def deduplicate(dfin, col):
             continue
         tok = ids.split(";")
         if len(tok) > 1:
-            for t in tok:
+            idx = [] # needs indices of other columns with multiple values
+            # for t in tok:
+            for j in xrange(0, len(tok)):
                 new_entry = df.iloc[i]
-                new_entry[col] = t
+                new_entry[col] = tok[j]
+                # for k in idx:
+                    # set new_entry columns named in idx to df.iloc[i][k].split(";")[j]
                 new_entries.append(new_entry)
             drp.append(i)
     df = df.drop(df.index[drp])
