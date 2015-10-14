@@ -38,7 +38,13 @@ wclp_exp = [c for c in wclp.columns if 'control' not in c.lower()]
 ub_exp = [c for c in ub.columns if 'control' not in c.lower()]
 ubp_exp = [c for c in ubp.columns if 'control' not in c.lower()]
 
+# Need to use underlying numpy arrays for singleton expansion ('broadcasting')
+# and form new DataFrame using appropriate column names.
 wcl_foldch = pd.DataFrame(log2(wcl[wcl_exp]).values - log2(wcl[wcl_ctrl]).values, columns=wcl_exp)
 wclp_foldch = pd.DataFrame(log2(wclp[wclp_exp]).values - log2(wclp[wclp_ctrl]).values, columns=wclp_exp)
 ub_foldch = pd.DataFrame(log2(ub[ub_exp]).values - log2(ub[ub_ctrl]).values, columns=ub_exp)
 ubp_foldch = pd.DataFrame(log2(ubp[ubp_exp]).values - log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
+
+# 2nd-to-last element is Shmoo / CaCl2.
+# Only histogram finite (non-inf, non-NaN) values.
+hist(wcl_foldch[wcl_foldch.columns[-2]][isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
