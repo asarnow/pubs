@@ -48,3 +48,9 @@ ubp_foldch = pd.DataFrame(log2(ubp[ubp_exp]).values - log2(ubp[ubp_ctrl]).values
 # 2nd-to-last element is Shmoo / CaCl2.
 # Only histogram finite (non-inf, non-NaN) values.
 hist(wcl_foldch[wcl_foldch.columns[-2]][isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
+
+#  add on names to foldch dataframe
+wcl_foldch['names'] = names
+wcl_foldch.set_index(names, inplace=True)
+
+target = len( wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 4) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -6)) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index )
