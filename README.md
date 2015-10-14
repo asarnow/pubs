@@ -10,5 +10,10 @@ Currently, it supports the following operations:
 + Use table join to merge multiple MS data files based on a shared field
 
 ## intensities.py
-intensities.py reads the proteinGroups.txt table into a PANDAS data frame and
-extracts relative intensity matrices for the four sample classes (WCL, WCLp, UB, UBp).
+intensities.py is another skeletal MS data analysis script.
+It's currently written to run in ipython after `%pylab` magic.
+Suggest copying the whole code and using `%paste` magic.
+
++ Read the proteinGroups.txt table into a PANDAS data frame
++ Extract relative intensity matrices for the four sample classes (WCL, WCLp, UB, UBp)
++ Log2-transform experiment : control relative intensity ratios (fold-change)

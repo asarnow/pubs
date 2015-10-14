@@ -1,18 +1,25 @@
-import pandas
+import pandas as pd
 
-proteins = pandas.read_table('data/pubs2015/proteinGroups.txt', low_memory=False)
-intensity_cols = [c for c in proteins.columns if 'intensity ' 
+proteins = pd.read_table('data/pubs2015/proteinGroups.txt', low_memory=False)
+
+intensity_cols = [c for c in proteins.columns if 'intensity '
             in c.lower() and 'lfq' not in c.lower()]
-ub_cols = [c for c in intensity_cols if '_ub' in c.lower()]
-wcl_cols = [c for c in intensity_cols if '_wcl' in c.lower()]
-ubp_cols = [c for c in intensity_cols if '_ubp' in c.lower()]
+
+
+wcl_cols = [c for c in intensity_cols if '_wcl' in c.lower() and '_wclp' not in c.lower()]
 wclp_cols = [c for c in intensity_cols if '_wclp' in c.lower()]
-mask = (proteins['Reverse'] != '+') & 
+ub_cols = [c for c in intensity_cols if '_ub' in c.lower() and '_ubp' not in c.lower()]
+ubp_cols = [c for c in intensity_cols if '_ubp' in c.lower()]
+
+mask = (proteins['Reverse'] != '+') & \
        (proteins['Potential contaminant'] != '+')
+
 intensities = proteins[mask][intensity_cols]
 total_intensities = proteins[intensity_cols].sum(axis=0)
 normed_intensities = intensities / total_intensities
+
 idx = (normed_intensities != 0).any(axis=1)
+
 names = proteins[mask][idx]['Protein IDs']
 nonzero_intensities = normed_intensities[idx]
 
@@ -26,12 +33,12 @@ wclp_ctrl = [c for c in wclp.columns if 'control' in c.lower()]
 ub_ctrl = [c for c in ub.columns if 'control' in c.lower()]
 ubp_ctrl = [c for c in ubp.columns if 'control' in c.lower()]
 
-wcl_exp = [c for c in wcl.columns if 'control' in c.lower()]
-wcl_exp = [c for c in wcl.columns if 'control' in c.lower()]
-wcl_exp = [c for c in wcl.columns if 'control' in c.lower()]
-wcl_exp = [c for c in wcl.columns if 'control' in c.lower()]
+wcl_exp = [c for c in wcl.columns if 'control' not in c.lower()]
+wclp_exp = [c for c in wclp.columns if 'control' not in c.lower()]
+ub_exp = [c for c in ub.columns if 'control' not in c.lower()]
+ubp_exp = [c for c in ubp.columns if 'control' not in c.lower()]
 
-wcl_foldch = log2(wcl[wcl_exp] / wcl[wcl_ctrl])
-wclp_foldch = log2(wclp[wclp_exp] / wclp[wclp_ctrl])
-ub_foldch = log2(ub[ub_exp] / ub[ub_ctrl])
-ubp_foldch = log2(ubp[ubp_exp] / ubp[ubp_ctrl])
+wcl_foldch = pd.DataFrame(log2(wcl[wcl_exp]).values - log2(wcl[wcl_ctrl]).values, columns=wcl_exp)
+wclp_foldch = pd.DataFrame(log2(wclp[wclp_exp]).values - log2(wclp[wclp_ctrl]).values, columns=wclp_exp)
+ub_foldch = pd.DataFrame(log2(ub[ub_exp]).values - log2(ub[ub_ctrl]).values, columns=ub_exp)
+ubp_foldch = pd.DataFrame(log2(ubp[ubp_exp]).values - log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
