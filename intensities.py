@@ -1,10 +1,12 @@
+import numpy as np
+import scipy as sp
+import matplotlib as plt
 import pandas as pd
 
 proteins = pd.read_table('data/pubs2015/proteinGroups.txt', low_memory=False)
 
 intensity_cols = [c for c in proteins.columns if 'intensity '
-            in c.lower() and 'lfq' not in c.lower()]
-
+                  in c.lower() and 'lfq' not in c.lower()]
 
 wcl_cols = [c for c in intensity_cols if '_wcl' in c.lower() and '_wclp' not in c.lower()]
 wclp_cols = [c for c in intensity_cols if '_wclp' in c.lower()]
@@ -40,21 +42,22 @@ ubp_exp = [c for c in ubp.columns if 'control' not in c.lower()]
 
 # Need to use underlying numpy arrays for singleton expansion ('broadcasting')
 # and form new DataFrame using appropriate column names.
-wcl_foldch = pd.DataFrame(log2(wcl[wcl_exp]).values - log2(wcl[wcl_ctrl]).values, columns=wcl_exp)
-wclp_foldch = pd.DataFrame(log2(wclp[wclp_exp]).values - log2(wclp[wclp_ctrl]).values, columns=wclp_exp)
-ub_foldch = pd.DataFrame(log2(ub[ub_exp]).values - log2(ub[ub_ctrl]).values, columns=ub_exp)
-ubp_foldch = pd.DataFrame(log2(ubp[ubp_exp]).values - log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
+wcl_foldch = pd.DataFrame(np.log2(wcl[wcl_exp]).values - np.log2(wcl[wcl_ctrl]).values, columns=wcl_exp)
+wclp_foldch = pd.DataFrame(np.log2(wclp[wclp_exp]).values - np.log2(wclp[wclp_ctrl]).values, columns=wclp_exp)
+ub_foldch = pd.DataFrame(np.log2(ub[ub_exp]).values - np.log2(ub[ub_ctrl]).values, columns=ub_exp)
+ubp_foldch = pd.DataFrame(np.log2(ubp[ubp_exp]).values - np.log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
 
 # 2nd-to-last element is Shmoo / CaCl2.
 # Only histogram finite (non-inf, non-NaN) values.
-hist(wcl_foldch[wcl_foldch.columns[-2]][isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
+plt.hist(wcl_foldch[wcl_foldch.columns[-2]][np.isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
 
 #  add on names to foldch dataframe
 wcl_foldch['names'] = names
 wcl_foldch.set_index(names, inplace=True)
 
-#target = wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -3)) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
-target = wcl_foldch[(wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
+# target = wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -3)) & np.isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
+target = wcl_foldch[
+    (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) & np.isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
 
 with open('ids.txt', 'w') as f:
     f.write('\n'.join(target))
