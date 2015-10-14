@@ -53,4 +53,8 @@ hist(wcl_foldch[wcl_foldch.columns[-2]][isfinite(wcl_foldch[wcl_foldch.columns[-
 wcl_foldch['names'] = names
 wcl_foldch.set_index(names, inplace=True)
 
-target = len( wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 4) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -6)) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index )
+#target = wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -3)) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
+target = wcl_foldch[(wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) & isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
+
+with open('ids.txt', 'w') as f:
+    f.write('\n'.join(target))
