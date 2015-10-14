@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 import numpy as np
 import scipy as sp
 import matplotlib as plt
@@ -49,15 +50,8 @@ ubp_foldch = pd.DataFrame(np.log2(ubp[ubp_exp]).values - np.log2(ubp[ubp_ctrl]).
 
 # 2nd-to-last element is Shmoo / CaCl2.
 # Only histogram finite (non-inf, non-NaN) values.
-plt.hist(wcl_foldch[wcl_foldch.columns[-2]][np.isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
+cnts = sp.histogram(wcl_foldch[wcl_foldch.columns[-2]][np.isfinite(wcl_foldch[wcl_foldch.columns[-2]])].values)
 
 #  add on names to foldch dataframe
-wcl_foldch['names'] = names
 wcl_foldch.set_index(names, inplace=True)
 
-# target = wcl_foldch[((wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) | (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] < -3)) & np.isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
-target = wcl_foldch[
-    (wcl_foldch["Intensity Shmoo_CaCl2_WCL"] > 3) & np.isfinite(wcl_foldch["Intensity Shmoo_CaCl2_WCL"])].index
-
-with open('ids.txt', 'w') as f:
-    f.write('\n'.join(target))
