@@ -48,7 +48,7 @@ wclp_foldch = pd.DataFrame(np.log2(wclp[wclp_exp]).values - np.log2(wclp[wclp_ct
 ub_foldch = pd.DataFrame(np.log2(ub[ub_exp]).values - np.log2(ub[ub_ctrl]).values, columns=ub_exp)
 ubp_foldch = pd.DataFrame(np.log2(ubp[ubp_exp]).values - np.log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
 
-#  add on names to foldch dataframe
+# Set protein names as index for the fold change data.
 wcl_foldch.set_index(names, inplace=True)
 wclp_foldch.set_index(names, inplace=True)
 ub_foldch.set_index(names, inplace=True)
