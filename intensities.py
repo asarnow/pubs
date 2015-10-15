@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 import numpy as np
 import scipy as sp
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 
 proteins = pd.read_table('data/pubs2015/proteinGroups.txt', low_memory=False)
@@ -43,13 +43,30 @@ ubp_exp = [c for c in ubp.columns if 'control' not in c.lower()]
 
 # Need to use underlying numpy arrays for singleton expansion ('broadcasting')
 # and form new DataFrame using appropriate column names.
-wcl_foldch = pd.DataFrame(np.log2(wcl[wcl_exp]).values - np.log2(wcl[wcl_ctrl]).values, columns=wcl_exp)
-wclp_foldch = pd.DataFrame(np.log2(wclp[wclp_exp]).values - np.log2(wclp[wclp_ctrl]).values, columns=wclp_exp)
-ub_foldch = pd.DataFrame(np.log2(ub[ub_exp]).values - np.log2(ub[ub_ctrl]).values, columns=ub_exp)
-ubp_foldch = pd.DataFrame(np.log2(ubp[ubp_exp]).values - np.log2(ubp[ubp_ctrl]).values, columns=ubp_exp)
+# TODO use DataFrame.sub() instead:
+# TODO wcl_foldch = np.log2(wcl[wcl_exp]).sub(np.log2(wcl[wcl_ctrl]))
+wcl_foldch = pd.DataFrame(
+    np.log2(wcl[wcl_exp]).values - np.log2(wcl[wcl_ctrl]).values,
+    columns=wcl_exp,
+    index=names
+)
+wclp_foldch = pd.DataFrame(
+    np.log2(wclp[wclp_exp]).values - np.log2(wclp[wclp_ctrl]).values,
+    columns=wclp_exp,
+    index=names
+)
+ub_foldch = pd.DataFrame(
+    np.log2(ub[ub_exp]).values - np.log2(ub[ub_ctrl]).values,
+    columns=ub_exp,
+    index=names
+)
+ubp_foldch = pd.DataFrame(
+    np.log2(ubp[ubp_exp]).values - np.log2(ubp[ubp_ctrl]).values,
+    columns=ubp_exp,
+    index=names
+)
 
-# Set protein names as index for the fold change data.
-wcl_foldch.set_index(names, inplace=True)
-wclp_foldch.set_index(names, inplace=True)
-ub_foldch.set_index(names, inplace=True)
-ubp_foldch.set_index(names, inplace=True)
+wcl_st = (wcl - sp.nanmean(wcl)) / sp.nanstd(wcl)
+wclp_st = (wclp - sp.nanmean(wclp)) / sp.nanstd(wclp)
+ub_st = (ub - sp.nanmean(ub)) / sp.nanstd(ub)
+ubp_st = (ubp - sp.nanmean(ubp)) / sp.nanstd(ubp)
