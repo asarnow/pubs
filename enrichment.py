@@ -29,12 +29,7 @@ def enrichment(df, cols, upper, lower):
         write_enrichment(df[down].index, os.path.join(enrichdir, c + '_down' + '.txt'))
 
 
-def main():
-    enrichment(wcl_foldch, wcl_exp, 3, -3)
-    enrichment(wclp_foldch, wclp_exp, 3, -3)
-    enrichment(ub_foldch, ub_exp, 3, -3)
-    enrichment(ubp_foldch, ubp_exp, 3, -3)
-
+def calculate_enrichment():
     gsy = pd.read_table('data/go_slim_mapping.tab', header=None, low_memory=False).set_index(0)
     # wcl_go = wcl_foldch.reset_index().merge(
     #         gsy,
@@ -42,6 +37,13 @@ def main():
     #         left_on="Protein IDs",
     #         right_on=0
     #     ).set_index("Protein IDs")
+
+
+def main():
+    enrichment(wcl_foldch, wcl_exp, 3, -3)
+    enrichment(wclp_foldch, wclp_exp, 3, -3)
+    enrichment(ub_foldch, ub_exp, 3, -3)
+    enrichment(ubp_foldch, ubp_exp, 3, -3)
 
 
 if __name__ == "__main__":
