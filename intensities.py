@@ -2,6 +2,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+import seaborn
 import pandas as pd
 
 proteins = pd.read_table('data/pubs2015/proteinGroups.txt', low_memory=False)
