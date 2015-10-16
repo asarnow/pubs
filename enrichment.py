@@ -36,7 +36,6 @@ def calculate_enrichment():
     for c in wcl_foldch.columns:
         up, down = threshold_columns(wcl_foldch, c, 3, -3)
         pairs = gsy.loc[wcl_foldch.index[up]][5]
-    
 
 
 def main():
