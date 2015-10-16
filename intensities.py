@@ -16,9 +16,7 @@ ub_cols = [c for c in intensity_cols if '_ub' in c.lower() and '_ubp' not in c.l
 ubp_cols = [c for c in intensity_cols if '_ubp' in c.lower()]
 
 mask = (proteins['Reverse'] != '+') & \
-       (proteins['Potential contaminant'] != '+') & \
-       (~np.array([s.startswith("CON") for s in proteins['Protein IDs']])) & \
-       (~np.array([s.startswith("REV") for s in proteins['Protein IDs']]))
+       (proteins['Potential contaminant'] != '+')
 
 intensities = proteins[mask][intensity_cols]
 total_intensities = proteins[intensity_cols].sum(axis=0)
