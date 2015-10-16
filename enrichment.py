@@ -5,10 +5,10 @@ import os.path
 
 def enrich(df, col, upper, lower):
     upreg = df[
-        (df[col] > upper) &
+        (df[col] >= upper) &
         np.isfinite(df[col])].index
     downreg = df[
-        (df[col] < lower) &
+        (df[col] <= lower) &
         np.isfinite(df[col])].index
     return upreg, downreg
 
@@ -27,6 +27,12 @@ def write_enrichment(enr, fname):
         f.write('\n'.join(list_genes(enr)) + '\n')
 
 
-for c in wcl_foldch[wcl_exp].columns:
-    up, down = enrich(wcl_foldch, c, 3, -3)
-    write_enrichment(up, os.path.join(enrichdir, c + '.txt'))
+def enrichment(df, cols, upper, lower):
+    for c in df[cols].columns:
+        up, down = enrich(df, c, upper, lower)
+        write_enrichment(up, os.path.join(enrichdir, c + '.txt'))
+
+enrichment(wcl_foldch, wcl_exp, 3, -3)
+enrichment(wclp_foldch, wclp_exp, 3, -3)
+enrichment(ub_foldch, ub_exp, 3, -3)
+enrichment(ubp_foldch, ubp_exp, 3, -3)
