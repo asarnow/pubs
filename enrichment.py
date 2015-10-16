@@ -16,34 +16,34 @@ def list_genes(enr):
     return genes
 
 
-def write_enrichment(enr, fname):
+def write_genes(enr, fname):
     with open(fname, 'w') as f:
         f.write(os.linesep.join(list_genes(enr)) + os.linesep)
 
 
-def enrichment(df, cols, upper, lower):
+def threshold_and_write(df, cols, upper, lower):
     enrichdir = 'data/enrichment'
     for c in df[cols].columns:
         up, down = threshold_columns(df, c, upper, lower)
-        write_enrichment(df[up].index, os.path.join(enrichdir, c + '_up' + '.txt'))
-        write_enrichment(df[down].index, os.path.join(enrichdir, c + '_down' + '.txt'))
+        write_genes(df[up].index, os.path.join(enrichdir, c + '_up' + '.txt'))
+        write_genes(df[down].index, os.path.join(enrichdir, c + '_down' + '.txt'))
 
 
 def calculate_enrichment():
     gsy = pd.read_table('data/go_slim_mapping.tab', header=None, low_memory=False).set_index(0)
     # wcl_go = wcl_foldch.reset_index().merge(
-    #         gsy,
-    #         how="inner",
-    #         left_on="Protein IDs",
-    #         right_on=0
-    #     ).set_index("Protein IDs")
+    #     gsy, how="inner", left_on="Protein IDs", right_on=0).set_index("Protein IDs")
+    for c in wcl_foldch.columns:
+        up, down = threshold_columns(wcl_foldch, c, 3, -3)
+        pairs = gsy.loc[wcl_foldch.index[up]][5]
+    
 
 
 def main():
-    enrichment(wcl_foldch, wcl_exp, 3, -3)
-    enrichment(wclp_foldch, wclp_exp, 3, -3)
-    enrichment(ub_foldch, ub_exp, 3, -3)
-    enrichment(ubp_foldch, ubp_exp, 3, -3)
+    threshold_and_write(wcl_foldch, wcl_exp, 3, -3)
+    threshold_and_write(wclp_foldch, wclp_exp, 3, -3)
+    threshold_and_write(ub_foldch, ub_exp, 3, -3)
+    threshold_and_write(ubp_foldch, ubp_exp, 3, -3)
 
 
 if __name__ == "__main__":
