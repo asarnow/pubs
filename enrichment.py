@@ -23,17 +23,10 @@ def list_genes(enr):
 
 
 def write_enrichment(enr, fname):
-    with open(os.path.join(enrichdir, fname), 'w') as f:
-        f.write('\n'.join(list_genes(enr)))
+    with open(fname, 'w') as f:
+        f.write('\n'.join(list_genes(enr)) + '\n')
 
 
-wcl_cacl2_up, wcl_cacl2_down = enrich(wcl_foldch, "Intensity Shmoo_CaCl2_WCL", 3, -3)
-wcl_cmk1_up, wcl_cmk1_down = enrich(wcl_foldch, "Intensity Shmoo_Cmk1KO_WCL", 3, -3)
-wclp_cmk1_up, wclp_cmk1_down = enrich(wclp_foldch, "Intensity Shmoo_Cmk1KO_WCLP", 3, -3)
-
-write_enrichment(wcl_cacl2_up, 'WCL_CaCl2_up_gt3.txt')
-write_enrichment(wcl_cacl2_down, 'WCL_CaCl2_down_le3.txt')
-write_enrichment(wcl_cmk1_up, 'WCL_cmk1_up_gt3.txt')
-write_enrichment(wcl_cmk1_down, 'WCL_cmk1_down_le3.txt')
-write_enrichment(wclp_cmk1_up, 'WCLp_cmk1_up_gt3.txt')
-write_enrichment(wclp_cmk1_down, 'WCLp_cmk1_down_le3.txt')
+for c in wcl_foldch[wcl_exp].columns:
+    up, down = enrich(wcl_foldch, c, 3, -3)
+    write_enrichment(up, os.path.join(enrichdir, c + '.txt'))
