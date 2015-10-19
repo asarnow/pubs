@@ -3,6 +3,7 @@ from intensities import *
 import sys
 import os
 import os.path
+import copy
 import go_obo_parser as obo
 import scipy.stats as stats
 
@@ -24,21 +25,16 @@ def write_genes(enr, fname):
         f.write(os.linesep.join(list_genes(enr)) + os.linesep)
 
 
-def threshold_and_write(df, cols, upper, lower):
-    enrichdir = 'data/threshold'
+def threshold_and_write(enrichdir, df, cols, upper, lower):
     for c in df[cols].columns:
         up, down = threshold_columns(df, c, upper, lower)
         write_genes(df[up].index, os.path.join(enrichdir, c + '_up' + '.txt'))
         write_genes(df[down].index, os.path.join(enrichdir, c + '_down' + '.txt'))
 
 
-def enrich(df, upper=3., lower=-3., bonferroni=False):
+def enrich(df, upper=3., lower=-3., alpha=0.05, correction=None):
     gsy = pd.read_table('data/go_slim_mapping.tab', header=None, low_memory=False).set_index(0)
     goslim = [g for g in obo.parse_go_obo('data/goslim_yeast.obo')]
-    if bonferroni:
-        bcor = len(set(gsy[5]))
-    else:
-        bcor = 1.
     # wcl_go = wcl_foldch.reset_index().merge(
     #     gsy, how="inner", left_on="Protein IDs", right_on=0).set_index("Protein IDs")
     res_up = {c: [] for c in df.columns}
@@ -50,22 +46,30 @@ def enrich(df, upper=3., lower=-3., bonferroni=False):
         goids_global = gsy.loc[df.index][5].tolist()
         terms_up = [g for g in goslim if g['id'] in set(goids_up)]
         terms_down = [g for g in goslim if g['id'] in set(goids_up)]
-        for tpl in calc_enrichment(terms_up, goids_up, goids_global, bcor):
-            res_up[c].append(tpl)
-        for tpl in calc_enrichment(terms_down, goids_down, goids_global, bcor):
-            res_down[c].append(tpl)
+        for lst in calc_enrichment(terms_up, goids_up, goids_global):
+            res_up[c].append(lst)
+        for lst in calc_enrichment(terms_down, goids_down, goids_global):
+            res_down[c].append(lst)
+        if correction == "holm":
+            res_up[c] = holm(res_up[c], alpha)
+            res_down[c] = holm(res_down[c], alpha)
+        elif correction == "bonferroni":
+            res_up[c] = bonferroni(res_up[c], len(set(gsy[5])), alpha)
+            res_down[c] = bonferroni(res_down[c], len(set(gsy[5])), alpha)
+        else:
+            res_up[c] = [lst for lst in res_up[c] if lst[2] < alpha]
+            res_down[c] = [lst for lst in res_down[c] if lst[2] < alpha]
     return res_up, res_down
 
 
-def calc_enrichment(terms, goids, goids_global, bcor):
+def calc_enrichment(terms, goids, goids_global):
     goidsr = goids.reset_index()
     goidsl = goidsr[5].tolist()
     for t in terms:
         cnt = goidsl.count(t['id'])
         global_cnt = goids_global.count(t['id'])
-        pval = stats.hypergeom.sf(cnt, len(goids_global), global_cnt, len(goids)) * bcor
-        if pval < 0.05:
-            yield (t['id'], t['name'], pval, ', '.join(goidsr[0][goidsr[5] == t['id']]))
+        pval = stats.hypergeom.sf(cnt, len(goids_global), global_cnt, len(goids))
+        yield [t['id'], t['name'], pval, ', '.join(goidsr[0][goidsr[5] == t['id']])]
 
 
 def write_enrichment(enr, fname):
@@ -74,9 +78,8 @@ def write_enrichment(enr, fname):
             f.write('\t'.join(str(s) for s in tpl) + os.linesep)
 
 
-def calc_and_write(df, upper=3., lower=-3., bonferroni=False):
-    enr_up, enr_down = enrich(df, upper, lower, bonferroni)
-    enrichdir = 'data/enrichment'
+def calc_and_write(enrichdir, df, upper=3., lower=-3., alpha=0.05, correction=None):
+    enr_up, enr_down = enrich(df, upper, lower, alpha, correction)
     for k in enr_up:
         fn = os.path.join(enrichdir, k + "_up_go.txt")
         write_enrichment(enr_up[k], fn)
@@ -85,17 +88,43 @@ def calc_and_write(df, upper=3., lower=-3., bonferroni=False):
         write_enrichment(enr_down[k], fn)
 
 
+def bonferroni(res, bcor, alpha):
+    new = []
+    for lst in res:
+        if lst[2] * bcor < alpha:
+            kst = copy.deepcopy(lst)
+            kst[2] = lst[2] * bcor
+            new.append(kst)
+    return new
+
+
+def holm(res, alpha):
+    pvs = sorted(res, key=lambda x: x[2])
+    k = 0
+    for i in xrange(0, len(pvs)):
+        if pvs[i][2] > alpha / (len(pvs) + 1 - i):
+            k = i
+            break
+    return pvs[0:k]
+
+
 def main(args):
     if args.thresh:
-        threshold_and_write(wcl_foldch, wcl_exp, args.upper, args.lower)
-        threshold_and_write(wclp_foldch, wclp_exp, args.upper, args.lower)
-        threshold_and_write(ub_foldch, ub_exp, args.upper, args.lower)
-        threshold_and_write(ubp_foldch, ubp_exp, args.upper, args.lower)
+        threshold_and_write(args.dir, wcl_foldch, wcl_exp, args.upper, args.lower)
+        threshold_and_write(args.dir, wclp_foldch, wclp_exp, args.upper, args.lower)
+        threshold_and_write(args.dir, ub_foldch, ub_exp, args.upper, args.lower)
+        threshold_and_write(args.dir, ubp_foldch, ubp_exp, args.upper, args.lower)
     if args.go:
-        calc_and_write(wcl_foldch, args.upper, args.lower, args.bonferroni)
-        calc_and_write(wclp_foldch, args.upper, args.lower, args.bonferroni)
-        calc_and_write(ub_foldch, args.upper, args.lower, args.bonferroni)
-        calc_and_write(ubp_foldch, args.upper, args.lower, args.bonferroni)
+        if args.bonferroni:
+            cor = "bonferroni"
+        elif args.holm:
+            cor = "holm"
+        else:
+            cor = None
+        calc_and_write(args.dir, wcl_foldch, args.upper, args.lower, args.alpha, cor)
+        calc_and_write(args.dir, wclp_foldch, args.upper, args.lower, args.alpha, cor)
+        calc_and_write(args.dir, ub_foldch, args.upper, args.lower, args.alpha, cor)
+        calc_and_write(args.dir, ubp_foldch, args.upper, args.lower, args.alpha, cor)
     else:
         return 1
     return 0
@@ -109,4 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--thresholds", action="store_true", default=False, dest="thresh")
     parser.add_argument("-g", "--go", action="store_true", default=False, dest="go")
     parser.add_argument("-b", "--bonferroni", action="store_true", default=False, dest="bonferroni")
+    parser.add_argument("-s", "--holm", action="store_true", default=False, dest="holm")
+    parser.add_argument("-a", "--alpha", action="store", type=float, default=0.05, dest="alpha")
+    parser.add_argument("-d", "--dir", action="store", default=".", dest="dir")
     sys.exit(main(parser.parse_args()))
