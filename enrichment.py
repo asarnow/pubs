@@ -1,10 +1,13 @@
 #!/usr/bin/env python2.7
 from intensities import *
+import sys
 import os
 import os.path
+import go_obo_parser as obo
+import scipy.stats as stats
 
 
-def threshold_columns(df, col, upper, lower):
+def threshold_columns(df, col, upper=3., lower=-3.):
     upreg = (df[col] >= upper) & np.isfinite(df[col])
     downreg = (df[col] <= lower) & np.isfinite(df[col])
     return upreg, downreg
@@ -22,28 +25,77 @@ def write_genes(enr, fname):
 
 
 def threshold_and_write(df, cols, upper, lower):
-    enrichdir = 'data/enrichment'
+    enrichdir = 'data/threshold'
     for c in df[cols].columns:
         up, down = threshold_columns(df, c, upper, lower)
         write_genes(df[up].index, os.path.join(enrichdir, c + '_up' + '.txt'))
         write_genes(df[down].index, os.path.join(enrichdir, c + '_down' + '.txt'))
 
 
-def calculate_enrichment():
+def enrich(df, upper=3., lower=-3.):
     gsy = pd.read_table('data/go_slim_mapping.tab', header=None, low_memory=False).set_index(0)
+    goslim = [g for g in obo.parse_go_obo('data/goslim_yeast.obo')]
     # wcl_go = wcl_foldch.reset_index().merge(
     #     gsy, how="inner", left_on="Protein IDs", right_on=0).set_index("Protein IDs")
-    for c in wcl_foldch.columns:
-        up, down = threshold_columns(wcl_foldch, c, 3, -3)
-        pairs = gsy.loc[wcl_foldch.index[up]][5]
+    res_up = {c: [] for c in df.columns}
+    res_down = {c: [] for c in df.columns}
+    for c in df.columns:
+        up, down = threshold_columns(df, c, upper, lower)
+        goids_up = gsy.loc[df.index[up]][5].tolist()
+        goids_down = gsy.loc[df.index[down]][5].tolist()
+        global_goids = gsy.loc[df.index][5].tolist()
+        terms_up = [g for g in goslim if g['id'] in set(goids_up)]
+        terms_down = [g for g in goslim if g['id'] in set(goids_up)]
+        for tpl in calc_enrichment(terms_up, goids_up, global_goids):
+            res_up[c].append(tpl)
+        for tpl in calc_enrichment(terms_down, goids_down, global_goids):
+            res_down[c].append(tpl)
+    return res_up, res_down
 
 
-def main():
-    threshold_and_write(wcl_foldch, wcl_exp, 3, -3)
-    threshold_and_write(wclp_foldch, wclp_exp, 3, -3)
-    threshold_and_write(ub_foldch, ub_exp, 3, -3)
-    threshold_and_write(ubp_foldch, ubp_exp, 3, -3)
+def calc_enrichment(terms, goids, goids_global):
+    for t in terms:
+        cnt = goids.count(t['id'])
+        global_cnt = goids_global.count(t['id'])
+        pval = stats.hypergeom.sf(cnt, len(goids_global), global_cnt, len(goids))
+        if pval < 0.05:
+            yield (t['id'], t['name'], pval)
+
+
+def write_enrichment(enr, fname):
+    with open(fname, 'w') as f:
+        for tpl in enr:
+            f.write('\t'.join(str(s) for s in tpl) + os.linesep)
+
+
+def calc_and_write(df, upper=3., lower=-3.):
+    enr_up, enr_down = enrich(df, upper, lower)
+    enrichdir = 'data/enrichment'
+    for k in enr_up:
+        fn = os.path.join(enrichdir, k + "_up_go.txt")
+        write_enrichment(enr_up[k], fn)
+    for k in enr_down:
+        fn = os.path.join(enrichdir, k + "_down_go.txt")
+        write_enrichment(enr_down[k], fn)
+
+
+def main(args):
+    if args.thresh:
+        threshold_and_write(wcl_foldch, wcl_exp, args.upper, args.lower)
+        threshold_and_write(wclp_foldch, wclp_exp, args.upper, args.lower)
+    if args.go:
+        calc_and_write(wcl_foldch, args.upper, args.lower)
+        calc_and_write(wclp_foldch, args.upper, args.lower)
+    else:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Threshold protein abundances and compute GO enrichment scores.")
+    parser.add_argument("-u", "--upper", action="store", type=float, default=3., dest="upper")
+    parser.add_argument("-l", "--lower", action="store", type=float, default=-3., dest="lower")
+    parser.add_argument("-t", "--thresholds", action="store_true", default=False, dest="thresh")
+    parser.add_argument("-g", "--go", action="store_true", default=False, dest="go")
+    sys.exit(main(parser.parse_args()))
