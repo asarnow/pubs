@@ -86,7 +86,7 @@ def main(args):
         threshold_and_write(wcl_foldch, wcl_exp, args.upper, args.lower)
         threshold_and_write(wclp_foldch, wclp_exp, args.upper, args.lower)
         threshold_and_write(ub_foldch, ub_exp, args.upper, args.lower)
-        threshold_and_write(ubp_foldch, ub_exp, args.upper, args.lower)
+        threshold_and_write(ubp_foldch, ubp_exp, args.upper, args.lower)
     if args.go:
         calc_and_write(wcl_foldch, args.upper, args.lower)
         calc_and_write(wclp_foldch, args.upper, args.lower)
