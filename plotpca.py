@@ -45,39 +45,109 @@ r3 = np.array([3, 7, 11, 12])
 idx = nonconstantrows(wcl.values)
 pca, s, v = princomp(wcl.values[idx, :].T)
 scatter2(pca)
-
-
-for label, x, y in zip(wcl.columns[r0], pca[r0, 0], pca[r2, 1]):
+plt.title('WCL')
+for label, x, y in zip(wcl.columns[:], pca[:, 0], pca[:, 1]):
     plt.annotate(
         label,
-        xy = (x, y), xytext = (10, 40),
-        textcoords = 'offset points',
-        bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+        xy=(x, y))
 
-for label, x, y in zip(wcl.columns[r1], pca[r1, 0], pca[r1, 1]):
+idx = nonconstantrows(wclp.values)
+pca, s, v = princomp(wclp.values[idx, :].T)
+scatter2(pca)
+plt.title('WCLP')
+for label, x, y in zip(wclp.columns[:], pca[:, 0], pca[:, 1]):
     plt.annotate(
         label,
-        xy = (x, y),
-        textcoords = 'offset points',
-        bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+        xy=(x, y))
 
-for label, x, y in zip(wcl.columns[r2], pca[r2, 0], pca[r2, 1]):
+idx = nonconstantrows(ub.values)
+pca, s, v = princomp(ub.values[idx, :].T)
+scatter2(pca)
+plt.title('Ub')
+for label, x, y in zip(ub.columns[:], pca[:, 0], pca[:, 1]):
     plt.annotate(
         label,
-        xy = (x, y), xytext = (-10, -40),
-        textcoords = 'offset points',
-        bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+        xy=(x, y))
 
-for label, x, y in zip(wcl.columns[r3], pca[r3, 0], pca[r3, 1]):
+idx = nonconstantrows(ubp.values)
+pca, s, v = princomp(ubp.values[idx, :].T)
+scatter2(pca)
+plt.title('UbP')
+for label, x, y in zip(ubp.columns[:], pca[:, 0], pca[:, 1]):
     plt.annotate(
         label,
-        xy = (x, y), xytext = (10, -40),
-        textcoords = 'offset points',
-        bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
-        arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+        xy=(x, y))
+
+wcl_foldch[~np.isfinite(wcl_foldch)] = 0
+idx = nonconstantrows(wcl_foldch.values)
+pca, s, v = princomp(wcl_foldch.values[idx, :].T)
+scatter2(pca)
+plt.title('WCL log2 FC')
+for label, x, y in zip(wcl_foldch.columns[:], pca[:, 0], pca[:, 1]):
+    plt.annotate(
+        label,
+        xy=(x, y))
+
+wclp_foldch[~np.isfinite(wclp_foldch)] = 0
+idx = nonconstantrows(wclp_foldch.values)
+pca, s, v = princomp(wclp_foldch.values[idx, :].T)
+scatter2(pca)
+plt.title('WCLP log2 FC')
+for label, x, y in zip(wclp_foldch.columns[:], pca[:, 0], pca[:, 1]):
+    plt.annotate(
+        label,
+        xy=(x, y))
+
+ub_foldch[~np.isfinite(ub_foldch)] = 0
+idx = nonconstantrows(ub_foldch.values)
+pca, s, v = princomp(ub_foldch.values[idx, :].T)
+scatter2(pca)
+plt.title('Ub log2 FC')
+for label, x, y in zip(ub_foldch.columns[:], pca[:, 0], pca[:, 1]):
+    plt.annotate(
+        label,
+        xy=(x, y))
+
+ubp_foldch[~np.isfinite(ubp_foldch)] = 0
+idx = nonconstantrows(ubp_foldch.values)
+pca, s, v = princomp(ubp_foldch.values[idx, :].T)
+scatter2(pca)
+plt.title('UbP log2 FC')
+for label, x, y in zip(ubp_foldch.columns[:], pca[:, 0], pca[:, 1]):
+    plt.annotate(
+        label,
+        xy=(x, y))
+# for label, x, y in zip(wcl.columns[r0], pca[r0, 0], pca[r2, 1]):
+#     plt.annotate(
+#         label,
+#         xy = (x, y), xytext = (10, 40),
+#         textcoords = 'offset points',
+#         bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+#         arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+#
+# for label, x, y in zip(wcl.columns[r1], pca[r1, 0], pca[r1, 1]):
+#     plt.annotate(
+#         label,
+#         xy = (x, y), xytext=(-10, 40),
+#         textcoords = 'offset points',
+#         bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+#         arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+#
+# for label, x, y in zip(wcl.columns[r2], pca[r2, 0], pca[r2, 1]):
+#     plt.annotate(
+#         label,
+#         xy = (x, y), xytext = (-10, -40),
+#         textcoords = 'offset points',
+#         bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+#         arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
+#
+# for label, x, y in zip(wcl.columns[r3], pca[r3, 0], pca[r3, 1]):
+#     plt.annotate(
+#         label,
+#         xy = (x, y), xytext = (10, -40),
+#         textcoords = 'offset points',
+#         bbox = dict(boxstyle = 'round,pad=0.5', fc = 'yellow', alpha = 0.5),
+#         arrowprops = dict(arrowstyle = '->', connectionstyle = 'arc3,rad=0'))
 
 plt.show(block=False)
 plt.show()
