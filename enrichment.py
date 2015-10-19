@@ -41,25 +41,27 @@ def enrich(df, upper=3., lower=-3.):
     res_down = {c: [] for c in df.columns}
     for c in df.columns:
         up, down = threshold_columns(df, c, upper, lower)
-        goids_up = gsy.loc[df.index[up]][5].tolist()
-        goids_down = gsy.loc[df.index[down]][5].tolist()
-        global_goids = gsy.loc[df.index][5].tolist()
+        goids_up = gsy.loc[df.index[up]][5]
+        goids_down = gsy.loc[df.index[down]][5]
+        goids_global = gsy.loc[df.index][5].tolist()
         terms_up = [g for g in goslim if g['id'] in set(goids_up)]
         terms_down = [g for g in goslim if g['id'] in set(goids_up)]
-        for tpl in calc_enrichment(terms_up, goids_up, global_goids):
+        for tpl in calc_enrichment(terms_up, goids_up, goids_global):
             res_up[c].append(tpl)
-        for tpl in calc_enrichment(terms_down, goids_down, global_goids):
+        for tpl in calc_enrichment(terms_down, goids_down, goids_global):
             res_down[c].append(tpl)
     return res_up, res_down
 
 
 def calc_enrichment(terms, goids, goids_global):
+    goidsr = goids.reset_index()
+    goidsl = goidsr[5].tolist()
     for t in terms:
-        cnt = goids.count(t['id'])
+        cnt = goidsl.count(t['id'])
         global_cnt = goids_global.count(t['id'])
         pval = stats.hypergeom.sf(cnt, len(goids_global), global_cnt, len(goids))
         if pval < 0.05:
-            yield (t['id'], t['name'], pval)
+            yield (t['id'], t['name'], pval, ', '.join(goidsr[0][goidsr[5] == t['id']]))
 
 
 def write_enrichment(enr, fname):
