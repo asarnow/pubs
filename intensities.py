@@ -19,7 +19,7 @@ mask = (proteins['Reverse'] != '+') & \
        (proteins['Potential contaminant'] != '+')
 
 intensities = proteins[mask][intensity_cols]
-total_intensities = proteins[intensity_cols].sum(axis=0)
+total_intensities = intensities.sum(axis=0)
 normed_intensities = intensities / total_intensities
 
 idx = (normed_intensities != 0).any(axis=1)
